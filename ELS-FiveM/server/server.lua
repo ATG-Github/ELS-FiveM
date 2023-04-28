@@ -769,17 +769,66 @@ function configCheck()
     end
 end
 
+local function determineOS()
+    local system = nil
+
+    local unix = os.getenv('HOME')
+    local windows = os.getenv('HOMEPATH')
+
+    if unix then system = 'unix' end
+    if windows then system = 'windows' end
+
+    -- this guy probably has some custom ENV var set...
+    if unix and windows then error('Couldn\'t identify the OS unambiguously.') end
+
+    return system
+end
+
+local function scanDir(folder)
+    local pathSeparator = '/'
+    local command = 'ls -A'
+
+    if determineOS() == 'windows' then
+        pathSeparator = '\\'
+        command = 'dir /R /B'
+    end
+
+    local resourcePath = GetResourcePath(GetCurrentResourceName())
+    local directory = resourcePath .. pathSeparator .. folder
+    local i, t, popen = 0, {}, io.popen
+    local pfile = popen(command .. ' "' .. directory .. '"')
+
+    for filename in pfile:lines() do
+        i = i + 1
+        t[i] = filename
+    end
+
+    if #t == 0 then
+        error('Couldn\'t find any VCF files. Are they in the correct directory?')
+    end
+
+    pfile:close()
+    return t
+end
+
+local function loadFile(file)
+    return LoadResourceFile(GetCurrentResourceName(), file)
+end
+
 AddEventHandler('onResourceStart', function(name)
     if name:lower() == GetCurrentResourceName():lower() then
         patternInfoTable.primarys = {}
         patternInfoTable.secondarys = {}
         patternInfoTable.advisors = {}
 
+        vcf_files = {}
+
+        local files = scanDir('vcf')
+        for _, file in ipairs(files) do
+            table.insert(vcf_files, file)
+        end
+
         local vcfType = type(vcf_files)
-        assert(vcfType == "table", string.format("Expected type 'table' for vcf_files, got %s. %s", vcfType, vcfType == "nil" and 
-            "Please make sure you have a file called 'vcf.lua' in the resource root folder (resources/ELS-FiveM or similar). Copy the contents of 'vcf.default.lua' " ..
-            "and alter accordingly." or "")
-        )
 
         local loadedFiles = 0
         for i=1,#vcf_files do

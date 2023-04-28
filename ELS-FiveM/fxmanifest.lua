@@ -10,13 +10,11 @@ description 'A resource which provides extensive controls for Emergency Lighting
 shared_script 'shared/*.lua'
 
 client_script {
-    'vcf.lua',
     'config.lua',
     'client/**/*.lua'
 }
 
 server_script {
-    'vcf.lua',
     'config.lua',
     'server/**/*.lua'
 }

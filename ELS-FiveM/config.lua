@@ -4,8 +4,8 @@ printDebugInformation = false
 
 vehicleSyncDistance = 150
 environmentLightBrightness = 0.006
-lightDelay = 10 -- Time in MS
-flashDelay = 15
+lightDelay = (10) / 7 -- Time in MS
+flashDelay = (15) / 7
 
 panelEnabled = true
 panelType = "original"
