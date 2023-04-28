@@ -15,56 +15,8 @@ end
 
 local latestVersion = curVersion
 local resourceName = "ELS-FiveM" .. (GetCurrentResourceName() ~= "ELS-FiveM" and " (" .. GetCurrentResourceName() .. ")" or "")
-local latestVersionPath = "https://raw.githubusercontent.com/MrDaGree/ELS-FiveM/master/ELS-FiveM/version.json"
-local curVerCol = function(nextVer)
-    return
-        (curVersion < nextVer) and "~r~" or
-        (curVersion > nextVer) and "~o~" or
-        "~g~"
-end
-local warnOnJoin = function() return GetConvar("els_warnOnJoin", "true") == "true" end
 
-function checkVersion()
-	PerformHttpRequest(latestVersionPath, function(err, response, headers)
-		if err or not response then return end
 
-		local data = json.decode(response)
-        local data_version = data?.version
-		local lVer = tonumber(data_version) or 000
-		local latestVersion = data_version:gsub("%.", "")
-			
-		if curVersion == 0 then
-			return print("^1Could not determine which version of ELS-FiveM you are running.")
-		end
-
-		-- is beta
-		if latestVersion:sub(-1) == "b" then
-			print("^1--------------------------------------------------------------------------")
-			print("You are currently running a BETA version of " .. resourceName .. ".^7")
-			print("Please report any regressions you find on the GitHub page (^4https://github.com/MrDaGree/ELS-FiveM^1")
-			print("--------------------------------------------------------------------------^7")
-		elseif curVersion ~= data_version and curVersion < lVer then
-			print("--------------------------------------------------------------------------")
-			print(resourceName .. " is outdated.\nCurrent Version: " .. data_version .. "\nYour Version: " .. curVersion .. "\nPlease update it from https://github.com/MrDaGree/ELS-FiveM")
-			print("\nUpdate Changelog:\n"..data.changelog)
-			print("\n--------------------------------------------------------------------------")
-		elseif curVersion > lVer then
-			print("Your version of " .. resourceName .. " seems to be higher than the current version. Hax bro?")
-		else
-			print(resourceName .. " is up to date!")
-		end
-
-		
-		latestVersion = tonumber(data_version)
-	end, "GET", "", { version = "this" })
-end
-
-Citizen.CreateThread(function()
-    while true do
-        checkVersion()
-        Citizen.Wait(3600000) -- 3600000 msec → 1 hour
-    end
-end)
 
 RegisterCommand('els', function(source, args)
     local function notify(plr, text)
@@ -77,32 +29,7 @@ RegisterCommand('els', function(source, args)
 
         TriggerClientEvent("els:notify", plr, text)
     end
-    if args[1] == 'version' then
-        PerformHttpRequest(latestVersionPath, function(err, response, headers)
-            local data = json.decode(response)
-            local data_verson = data?.version
-            local thisVersion = tonumber(data_verson)
-
-            if source > 0 then
-                return notify(source, "~r~ELS~s~~n~Version " .. curVerCol(thisVersion) .. curVersion)
-            end
-
-            local message
-            if curVersion ~= data_verson and curVersion < thisVersion then
-                message = "You are currently running an outdated version of [ " .. GetCurrentResourceName() .. " ]. Your version [ " .. curVersion .. " ]. Newest version: [ " .. data_verson .. " ]."
-            elseif curVersion > thisVersion then
-                message = "Um, what? Your version of ELS-FiveM is higher than the current version. What?"
-            else
-                message = "Your version of [ " .. GetCurrentResourceName() .. " ] is up to date! Current version: [ " .. curVersion .. " ]."
-            end
-
-            if message then
-                return print("ELS-FiveM (" .. GetCurrentResourceName() .. "): " .. message)
-            end
-
-            return print("ELS-FiveM (" .. GetCurrentResourceName() .. "): Could not find any relationship between the latest version and the version you are running.")
-        end, "GET", "", {version = 'this'})
-    elseif args[1] == 'panel' then
+if args[1] == 'panel' then
         if source == 0 then return end
         if not args[2] then
             TriggerClientEvent("chat:addMessage", source, {
@@ -114,15 +41,12 @@ RegisterCommand('els', function(source, args)
 
         TriggerClientEvent('els:setPanelType', source, args[2])
     elseif not args[1] or args[1] == 'help' then
-        TriggerClientEvent("els:notify", source, "~r~ELS~s~~n~Version " .. curVerCol(latestVersion) .. curVersion)
         TriggerClientEvent("els:notify", source, "~b~Sub-Commands~s~~n~" .. "~p~panel~s~ - Sets the panel type, options: " .. table.concat(allowedPanelTypes, ", ") .. "~n~~p~version~s~ - Shows current version and if the owner should update or not.~n~~p~help~s~ - Displays this notification.")
     end
 end)
 
 RegisterNetEvent("els:playerSpawned")
 AddEventHandler("els:playerSpawned", function()
-    if not warnOnJoin() then return end
-
     if curVersion < latestVersion then
         TriggerClientEvent("els:notify", source, "~r~ELS-FiveM~s~~n~Outdated version! Please update as soon as possible.")
     elseif curVersion > latestVersion then

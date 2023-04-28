@@ -294,7 +294,7 @@ function setHornState(veh, newstate)
                         
             if newstate == 1 then
                 h_soundID_veh[veh] = GetSoundId()
-                PlaySoundFromEntity(h_soundID_veh[veh], getVehicleVCFInfo(veh).sounds.mainHorn.audioString, veh, 0, 0, 0)
+                PlaySoundFromEntity(h_soundID_veh[veh], "OISS_SSA_VEHAUD_BCFD_NEW_HORN", veh, "OISS_SSA_VEHAUD_BCFD_NEW_SOUNDSET", 0, 0, 0)
             end             
                 
             h_horn_state[veh] = newstate
@@ -311,23 +311,41 @@ function setSirenState(veh, newstate)
                 ReleaseSoundId(m_soundID_veh[veh])
                 m_soundID_veh[veh] = nil
             end
-                        
+
             if newstate == 1 then
 
                 m_soundID_veh[veh] = GetSoundId()
-                PlaySoundFromEntity(m_soundID_veh[veh], getVehicleVCFInfo(veh).sounds.srnTone1.audioString, veh, 0, 0, 0)
+                PlaySoundFromEntity(m_soundID_veh[veh], "OISS_SSA_VEHAUD_BCFD_NEW_SIREN_ADAM", veh, "OISS_SSA_VEHAUD_BCFD_NEW_SOUNDSET", 0, 0, 0)
                 toggleSirenMute(veh, true)
                 
             elseif newstate == 2 then
 
                 m_soundID_veh[veh] = GetSoundId() 
-                PlaySoundFromEntity(m_soundID_veh[veh], getVehicleVCFInfo(veh).sounds.srnTone2.audioString, veh, 0, 0, 0)
+                PlaySoundFromEntity(m_soundID_veh[veh], "OISS_SSA_VEHAUD_BCFD_NEW_SIREN_BOY", veh, "OISS_SSA_VEHAUD_BCFD_NEW_SOUNDSET", 0, 0, 0)
                 toggleSirenMute(veh, true)
                 
             elseif newstate == 3 then
 
                 m_soundID_veh[veh] = GetSoundId()
-                PlaySoundFromEntity(m_soundID_veh[veh], getVehicleVCFInfo(veh).sounds.srnTone3.audioString, veh, 0, 0, 0)
+                PlaySoundFromEntity(m_soundID_veh[veh], "OISS_SSA_VEHAUD_BCFD_NEW_SIREN_CHARLES", veh, "OISS_SSA_VEHAUD_BCFD_NEW_SOUNDSET", 0, 0, 0)
+                toggleSirenMute(veh, true)
+                        
+            elseif newstate == 4 then
+
+                m_soundID_veh[veh] = GetSoundId()
+                PlaySoundFromEntity(m_soundID_veh[veh], "OISS_SSA_VEHAUD_BCFD_NEW_SIREN_DAVID", veh, "OISS_SSA_VEHAUD_BCFD_NEW_SOUNDSET", 0, 0, 0)
+                toggleSirenMute(veh, true)
+                
+            elseif newstate == 5 then
+
+                m_soundID_veh[veh] = GetSoundId() 
+                PlaySoundFromEntity(m_soundID_veh[veh], "OISS_SSA_VEHAUD_BCFD_NEW_SIREN_EDWARD", veh, "OISS_SSA_VEHAUD_BCFD_NEW_SOUNDSET", 0, 0, 0)
+                toggleSirenMute(veh, true)
+                
+            elseif newstate == 6 then
+
+                m_soundID_veh[veh] = GetSoundId()
+                PlaySoundFromEntity(m_soundID_veh[veh], "OISS_SSA_VEHAUD_BCFD_OLD_HORN", veh, "OISS_SSA_VEHAUD_BCFD_OLD_SOUNDSET", 0, 0, 0)
                 toggleSirenMute(veh, true)
                 
             else
@@ -673,6 +691,18 @@ function getVehicleVCFInfo(veh)
     return els_Vehicles[checkCarHash(veh)] or false
 end
 
+local iVE = {};
+
+exports("isVehicleELS", function(veh)
+    if iVE[veh] ~= nil then
+        return iVE[veh]
+    end
+
+    iVE[veh] = vehInTable(els_Vehicles, checkCarHash(veh))
+
+    return iVE[veh]
+end)
+
 ped = 0
 current_vehicle = 0
 isVehicleELS = false
@@ -685,6 +715,7 @@ Citizen.CreateThread(function()
         if current_vehicle ~= 0 then
             if (els_Vehicles ~= nil) then
                 isVehicleELS = vehInTable(els_Vehicles, checkCarHash(current_vehicle))
+                Entity(current_vehicle).state.isELS = isVehicleELS
             end
             if isVehicleELS then
                 if GetPedInVehicleSeat(current_vehicle, -1) == ped or GetPedInVehicleSeat(current_vehicle, 0) == ped then
@@ -694,10 +725,12 @@ Citizen.CreateThread(function()
                 debugPrint('canControlELS = ' .. tostring(canControlELS), false, true)
             else
                 canControlELS = false
+                Citizen.Wait(333)
             end
         else
             isVehicleELS = false
             canControlELS = false
+            Citizen.Wait(666)
         end
         Citizen.Wait(0)
     end
@@ -707,7 +740,7 @@ Citizen.CreateThread(function()
     while true do
         ped = PlayerPedId()
         current_vehicle = GetVehiclePedIsIn(ped, false)
-        Citizen.Wait(500)
+        Citizen.Wait(666)
     end
 end)
 
